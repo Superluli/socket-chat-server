@@ -11,9 +11,25 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.code.chatterbotapi.ChatterBot;
+import com.google.code.chatterbotapi.ChatterBotFactory;
+import com.google.code.chatterbotapi.ChatterBotSession;
+import com.google.code.chatterbotapi.ChatterBotType;
+
 public class Server {
 
     private static Map<String, Socket> SOCKET_POOL = new HashMap<String, Socket>();
+
+    private static ChatterBotSession SESSION;
+
+    static {
+
+	try {
+	    SESSION = new ChatterBotFactory().create(ChatterBotType.CLEVERBOT).createSession();
+	} catch (Exception e) {
+
+	}
+    }
 
     public static void main(String[] args) throws Exception {
 
@@ -41,7 +57,7 @@ public class Server {
 	    OutputStream out = connection.getOutputStream();
 	    OutputStreamWriter ow = new OutputStreamWriter(out);
 
-	    ow.write("Welcome to Lu's chatroom, choose a name : " + "\n");
+	    ow.write("Welcome to LuBot's chatroom, choose a name : " + "\n");
 	    ow.flush();
 
 	    String line = null;
@@ -51,9 +67,11 @@ public class Server {
 		    SOCKET_POOL.put(userName, connection);
 		    handShake = false;
 		    broadcast(null, userName + " joined the room, welcome !");
+		    broadcast(null, "LusBot" + " : " + botReply("Hi"));
 		    System.out.println(SOCKET_POOL);
 		} else {
 		    broadcast(userName, userName + " : " + line);
+		    broadcast(null, "LusBot" + " : " + botReply(line));
 		}
 	    }
 	} catch (Exception e) {
@@ -81,5 +99,15 @@ public class Server {
 	} catch (Exception e) {
 	    e.printStackTrace();
 	}
+    }
+
+    private static String botReply(String input) {
+
+	try {
+	    return SESSION.think(input);
+	} catch (Exception e) {
+	    return "There is a bug in my brain, I need to fix ";
+	}
+
     }
 }
